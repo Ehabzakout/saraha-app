@@ -104,7 +104,8 @@ export const login = async (req, res) => {
 
 	if (!existedUser)
 		throw new Error("You don't have an account", { cause: 404 });
-
+	if (existedUser.isValid === false)
+		throw new Error("Verify you account", { cause: 401 });
 	const match = bcrypt.compareSync(password, existedUser.password);
 	if (!match) throw new Error("Incorrect email or password", { cause: 401 });
 	const token = jwt.sign(

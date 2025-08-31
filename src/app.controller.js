@@ -10,6 +10,7 @@ export default function bootstrap(app, express) {
 		})
 	);
 	app.use(express.json());
+	app.use("/upload", express.static("upload"));
 	app.use("/auth", auth);
 	app.use("/users", users);
 	app.use((err, req, res, next) => {

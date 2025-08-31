@@ -48,6 +48,9 @@ const schema = new Schema(
 			enum: ["local", "google"],
 			default: "local",
 		},
+		profileImg: {
+			type: String,
+		},
 	},
 	{
 		timestamps: true,

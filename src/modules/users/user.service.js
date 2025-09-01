@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { User } from "../../DB/models/user.model.js";
-import { verifyToken } from "./../../utils/token/verify-token.js";
+import { unlinkSync } from "node:fs";
 
 export const deleteUser = async (req, res) => {
 	const { token } = req.headers;
@@ -11,6 +11,7 @@ export const deleteUser = async (req, res) => {
 };
 
 export const uploadPhoto = async (req, res) => {
+	if (req.user.profileImg) unlinkSync(req.user.profileImg);
 	const userExist = await User.findByIdAndUpdate(
 		req.user._id,
 		{

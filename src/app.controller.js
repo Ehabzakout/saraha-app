@@ -1,3 +1,4 @@
+import { unlink, unlinkSync } from "node:fs";
 import { connectDB } from "./DB/connection.js";
 import auth from "./modules/auth/auth.controller.js";
 import users from "./modules/users/user.controller.js";
@@ -14,6 +15,9 @@ export default function bootstrap(app, express) {
 	app.use("/auth", auth);
 	app.use("/users", users);
 	app.use((err, req, res, next) => {
+		if (req.file) {
+			unlinkSync(req.file.path);
+		}
 		return res
 			.status(err.cause || 500)
 			.json({ message: err.message || "Server Error" });

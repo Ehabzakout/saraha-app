@@ -3,7 +3,10 @@ import bcrypt from "bcrypt";
 import { sendEmail } from "../../utils/email/index.js";
 import { generateOTP } from "../../utils/otp/index.js";
 import { OAuth2Client } from "google-auth-library";
-import jwt from "jsonwebtoken";
+
+import { generateToken } from "../../utils/token/index.js";
+import { comparePassword, hashPassword } from "../../utils/hash/index.js";
+import { Token } from "./../../DB/models/token.model.js";
 
 // Register
 export const register = async (req, res) => {
@@ -67,15 +70,16 @@ export const verifyAccount = async (req, res) => {
 	return res.status(200).json({ message: "user verified successfully" });
 };
 
-// Resend otp
-export const resendOtp = async (req, res) => {
+// send otp
+export const sendOtp = async (req, res) => {
 	const { email } = req.body;
 	const { otp, expireDate } = generateOTP();
-	await User.updateOne({ email }, { otp, expireDate });
+	const user = await User.findOneAndUpdate({ email }, { otp, expireDate });
+	if (!user) throw new Error("Invalid Email", { cause: 404 });
 	await sendEmail({
 		to: email,
-		subject: "Resend OTP",
-		html: `<p>Resend new OTP : ${otp}`,
+		subject: "New OTP",
+		html: `<p>send new OTP : ${otp}`,
 	});
 	return res.status(200).json({ message: "OTP Send successfully" });
 };
@@ -106,14 +110,27 @@ export const login = async (req, res) => {
 		throw new Error("You don't have an account", { cause: 404 });
 	if (existedUser.isValid === false)
 		throw new Error("Verify you account", { cause: 401 });
-	const match = bcrypt.compareSync(password, existedUser.password);
+	const match = comparePassword(password, existedUser.password);
 	if (!match) throw new Error("Incorrect email or password", { cause: 401 });
-	const token = jwt.sign(
-		{ name: existedUser.fullName, id: existedUser._id },
-		"hgfjhbjbbjbjhbh",
-		{ expiresIn: "15m" }
-	);
-	return res.status(200).json({ message: "logged in successfully", token });
+	const accessToken = generateToken({
+		data: {
+			name: existedUser.fullName,
+			id: existedUser._id,
+		},
+	});
+	const refreshToken = generateToken({
+		data: { name: existedUser.fullName, id: existedUser._id },
+		expiresIn: "7d",
+	});
+
+	await Token.create({
+		token: refreshToken,
+		type: "refresh",
+		user: existedUser._id,
+	});
+	return res
+		.status(200)
+		.json({ message: "logged in successfully", accessToken, refreshToken });
 };
 
 // Login with google
@@ -135,10 +152,45 @@ export const loginWithGoogle = async (req, res) => {
 		});
 		await existedUser.save();
 	}
-	const token = jwt.sign(
-		{ name: existedUser.fullName, id: existedUser._id },
-		"hgfjhbjbbjbjhbh",
-		{ expiresIn: "15m" }
-	);
-	return res.status(200).json({ message: "success", token });
+	const accessToken = generateToken({
+		data: {
+			name: existedUser.fullName,
+			id: existedUser._id,
+		},
+	});
+	const refreshToken = generateToken({
+		data: { name: existedUser.fullName, id: existedUser._id },
+		expiresIn: "7d",
+	});
+
+	await Token.create({
+		token: refreshToken,
+		type: "refresh",
+		user: existedUser._id,
+	});
+	return res.status(200).json({ message: "success", accessToken });
+};
+
+export const resetPassword = async (req, res) => {
+	const { email, otp, newPassword, rePassword } = req.body;
+	const existedUser = await User.findOne({ email });
+	if (!existedUser) throw new Error("user not found", { cause: 404 });
+
+	if (+otp !== existedUser.otp) throw new Error("Invalid Otp", { cause: 400 });
+	if (existedUser.expireDate < Date.now())
+		throw new Error("Expired OTP", { cause: 400 });
+
+	existedUser.password = hashPassword(newPassword);
+	existedUser.otp = undefined;
+	existedUser.expireDate = undefined;
+	await existedUser.save();
+
+	return res.status(200).json({ message: "Password updated successfully" });
+};
+
+// Logout
+export const logout = async (req, res) => {
+	const { accessToken } = req.headers;
+	await Token.create({ token: accessToken, user: req.user._id });
+	return res.status(200).json({ message: "logged out successfully" });
 };

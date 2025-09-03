@@ -3,6 +3,7 @@ import { connectDB } from "./DB/connection.js";
 import auth from "./modules/auth/auth.controller.js";
 import users from "./modules/users/user.controller.js";
 import cors from "cors";
+import { globalErrorHandler } from "./utils/handler/errors/index.js";
 export default function bootstrap(app, express) {
 	connectDB();
 	app.use(
@@ -14,12 +15,5 @@ export default function bootstrap(app, express) {
 	app.use("/upload", express.static("upload"));
 	app.use("/auth", auth);
 	app.use("/users", users);
-	app.use((err, req, res, next) => {
-		if (req.file) {
-			unlinkSync(req.file.path);
-		}
-		return res
-			.status(err.cause || 500)
-			.json({ message: err.message || "Server Error" });
-	});
+	app.use(globalErrorHandler);
 }

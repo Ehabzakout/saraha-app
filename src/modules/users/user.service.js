@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import { User } from "../../DB/models/user.model.js";
 import { unlinkSync } from "node:fs";
 import cloudinary from "./../../utils/cloud/cloudinary.cloud.js";

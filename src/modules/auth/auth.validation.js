@@ -1,21 +1,32 @@
 import Joi from "joi";
+import { generalFields } from "../../middleware/validation.middleware.js";
 
 export const registerSchema = Joi.object({
 	firstName: Joi.string().required(),
 	lastName: Joi.string().required(),
 	email: Joi.string().email(),
-	password: Joi.string().regex(/^[a-zA-Z0-9]{8,30}$/),
+	password: Joi.string()
+		.regex(/^[a-zA-Z0-9]{8,30}$/)
+		.required(),
 	phone: Joi.string().length(11),
 	bod: Joi.date(),
+	rePassword: generalFields.rePassword("password").required(),
 }).or("email", "phone");
 
 export const loginSchema = Joi.object({
-	email: Joi.string().email(),
-	password: Joi.string().regex(/^[a-zA-Z0-9]{8,30}$/),
-	phone: Joi.string().length(11),
+	email: generalFields.email,
+	password: generalFields.password.required(),
+	phone: generalFields.phone,
 }).or("email", "phone");
 
 export const verifyAccountSchema = Joi.object({
-	email: Joi.string().email().required(),
-	otp: Joi.string().length(5).required(),
+	email: generalFields.email.required(),
+	otp: generalFields.otp.required(),
+});
+
+export const resetPasswordSchema = Joi.object({
+	email: generalFields.email.required(),
+	otp: generalFields.otp.required(),
+	newPassword: generalFields.password.required(),
+	rePassword: generalFields.rePassword("newPassword").required(),
 });

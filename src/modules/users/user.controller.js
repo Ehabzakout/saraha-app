@@ -8,7 +8,7 @@ import { isAuthenticated } from "../../middleware/auth.middleware.js";
 
 const router = Router();
 
-router.delete("/", asyncHandler(deleteUser));
+router.delete("/", isAuthenticated, asyncHandler(deleteUser));
 router.post(
 	"/upload-photo",
 	isAuthenticated,

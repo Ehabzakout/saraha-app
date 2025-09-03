@@ -51,6 +51,10 @@ const schema = new Schema(
 		profileImg: {
 			type: String,
 		},
+		cloudImg: {
+			secureUrl: String,
+			publicId: String,
+		},
 	},
 	{
 		timestamps: true,

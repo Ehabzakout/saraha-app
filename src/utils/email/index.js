@@ -5,8 +5,8 @@ export async function sendEmail({ to, subject, html }) {
 		host: "smtp.gmail.com",
 		port: 587,
 		auth: {
-			user: "ftwehab@gmail.com",
-			pass: "mvex pdfh dgxl lutk",
+			user: process.env.USER_EMAIL,
+			pass: process.env.PASSWORD,
 		},
 	});
 

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export function connectDB() {
 	mongoose
-		.connect("mongodb://127.0.0.1:27017/saraha-app")
+		.connect(process.env.DB_CONNECTION)
 		.then(() => {
 			console.log("Connected to DB");
 		})

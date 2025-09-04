@@ -2,7 +2,8 @@ import Joi from "joi";
 
 export function isValid(schema) {
 	return (req, res, next) => {
-		const { value, error } = schema.validate(req.body, { abortEarly: false });
+		const data = { ...req.body, ...req.params, ...req.query };
+		const { value, error } = schema.validate(data, { abortEarly: false });
 		if (error) {
 			const errorMessage = error.details.map((err) => err.message);
 			throw new Error(errorMessage.join(", "), { cause: 400 });
@@ -20,4 +21,5 @@ export const generalFields = {
 	phone: Joi.string().length(11),
 	bod: Joi.date(),
 	rePassword: (ref) => Joi.string().valid(Joi.ref(ref)),
+	objectId: Joi.string().hex().length(24),
 };

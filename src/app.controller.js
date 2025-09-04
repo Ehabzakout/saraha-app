@@ -1,6 +1,7 @@
 import { connectDB } from "./DB/connection.js";
 import auth from "./modules/auth/auth.controller.js";
 import users from "./modules/users/user.controller.js";
+import messages from "./modules/messages/message.controller.js";
 import cors from "cors";
 import { globalErrorHandler } from "./utils/handler/errors/index.js";
 import rateLimit from "express-rate-limit";
@@ -25,5 +26,9 @@ export default function bootstrap(app, express) {
 	app.use("/upload", express.static("upload"));
 	app.use("/auth", limiter, auth);
 	app.use("/users", users);
+	app.use("/message", messages);
+	app.all("/{*routes}", (req, res) =>
+		res.status(404).json({ message: "Route not found" })
+	);
 	app.use(globalErrorHandler);
 }

@@ -2,9 +2,9 @@ import { generateToken, verifyToken } from "../../token/index.js";
 import { Token } from "../../../DB/models/token.model.js";
 
 export const globalErrorHandler = async (err, req, res, next) => {
-	if (req.file) {
-		unlinkSync(req.file.path);
-	}
+	// if (req.file) {
+	// 	unlinkSync(req.file.path);
+	// }
 
 	if (err.message === "jwt expired") {
 		const { refreshtoken } = req.headers;

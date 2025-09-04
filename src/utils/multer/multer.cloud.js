@@ -8,6 +8,8 @@ export function uploadFiles(
 ) {
 	const storage = diskStorage({});
 	const fileFilter = (req, file, cb) => {
+		if (file.size > 2 * 1024 * 1024)
+			cb(new Error("your file should be less than 2MB"));
 		if (allowedTypes.includes(file.mimetype)) cb(null, true);
 		else cb(new Error("invalid file type", { cause: 400 }));
 	};

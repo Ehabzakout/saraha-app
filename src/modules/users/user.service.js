@@ -1,12 +1,14 @@
 import { User } from "../../DB/models/user.model.js";
 import { unlinkSync } from "node:fs";
-import cloudinary from "./../../utils/cloud/cloudinary.cloud.js";
+import cloudinary, {
+	deleteFolder,
+	uploadFileToCloud,
+} from "./../../utils/cloud/cloudinary.cloud.js";
 
 export const deleteUser = async (req, res) => {
 	const id = req.user._id;
 	if (req.user.cloudImg.publicId) {
-		await cloudinary.api.delete_resources_by_prefix(`sarah-app/users/${id}`);
-		await cloudinary.api.delete_folder(`sarah-app/users/${id}`);
+		await deleteFolder(`sarah-app/users/${id}`);
 	}
 	const deletedUser = await User.deleteOne({ _id: id });
 	if (!deletedUser) throw new Error("Can't found user", { cause: 404 });
@@ -28,13 +30,9 @@ export const uploadPhoto = async (req, res) => {
 
 export const uploadPhotoCloud = async (req, res) => {
 	await cloudinary.uploader.destroy(req.user.cloudImg.publicId);
-	const { secure_url, public_id } = await cloudinary.uploader.upload(
-		req.file.path,
-
-		{
-			folder: `sarah-app/users/${req.user._id}/profile`,
-		}
-	);
+	const { secure_url, public_id } = await uploadFileToCloud(req.file, {
+		folder: `sarah-app/users/${req.user._id}/profile`,
+	});
 
 	const user = await User.findByIdAndUpdate(
 		req.user._id,

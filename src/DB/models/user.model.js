@@ -55,6 +55,10 @@ const schema = new Schema(
 			secureUrl: String,
 			publicId: String,
 		},
+		credentialUpdatedAt: {
+			type: Date,
+			default: Date.now(),
+		},
 	},
 	{
 		timestamps: true,

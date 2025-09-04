@@ -183,8 +183,9 @@ export const resetPassword = async (req, res) => {
 	existedUser.password = hashPassword(newPassword);
 	existedUser.otp = undefined;
 	existedUser.expireDate = undefined;
+	existedUser.credentialUpdatedAt = Date.now();
 	await existedUser.save();
-
+	await Token.deleteMany({ user: existedUser._id, type: "refresh" });
 	return res.status(200).json({ message: "Password updated successfully" });
 };
 

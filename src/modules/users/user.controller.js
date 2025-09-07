@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { deleteUser, uploadPhoto, uploadPhotoCloud } from "./user.service.js";
+import {
+	deleteUser,
+	uploadPhoto,
+	uploadPhotoCloud,
+	userProfile,
+} from "./user.service.js";
 import asyncHandler from "./../../utils/handler/asynchandler.js";
 import { uploadFiles } from "../../utils/multer/multer.local.js";
 import { uploadFiles as uploadFilesCloud } from "../../utils/multer/multer.cloud.js";
@@ -24,4 +29,6 @@ router.post(
 	fileValidationType(),
 	asyncHandler(uploadPhotoCloud)
 );
+
+router.get("/profile", isAuthenticated, asyncHandler(userProfile));
 export default router;

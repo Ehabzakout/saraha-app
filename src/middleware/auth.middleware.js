@@ -7,6 +7,7 @@ export const isAuthenticated = async (req, res, next) => {
 
 	if (!accesstoken) throw new Error("You are not loggedin");
 	const { id, iat } = verifyToken(accesstoken);
+
 	const blockedToken = await Token.findOne({
 		token: accesstoken,
 		type: "access",
@@ -17,6 +18,8 @@ export const isAuthenticated = async (req, res, next) => {
 
 	if (new Date(iat * 1000) < existedUser.credentialUpdatedAt)
 		throw new Error("Token expired");
+	if (existedUser.deletedAt < Date.now())
+		throw new Error("User not found", { cause: 404 });
 	req.user = existedUser;
 	return next();
 };

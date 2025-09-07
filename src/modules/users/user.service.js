@@ -1,4 +1,5 @@
 import { User } from "../../DB/models/user.model.js";
+import { Token } from "./../../DB/models/token.model.js";
 import { unlinkSync } from "node:fs";
 import cloudinary, {
 	deleteFolder,
@@ -6,13 +7,20 @@ import cloudinary, {
 } from "./../../utils/cloud/cloudinary.cloud.js";
 
 export const deleteUser = async (req, res) => {
-	const id = req.user._id;
-	if (req.user.cloudImg.publicId) {
-		await deleteFolder(`sarah-app/users/${id}`);
-	}
-	const deletedUser = await User.deleteOne({ _id: id });
-	if (!deletedUser) throw new Error("Can't found user", { cause: 404 });
-	return res.status(200).json({ message: "success" });
+	await User.updateOne(
+		{ _id: req.user._id },
+		{ deletedAt: Date.now(), credentialUpdatedAt: Date.now() }
+	);
+	await Token.deleteMany({ user: req.user._id });
+	return res.status(200).json({ message: "User deleted successfully" });
+	// **Remove user files from cloud**
+	// const id = req.user._id;
+	// if (req.user.cloudImg.publicId) {
+	// 	await deleteFolder(`sarah-app/users/${id}`);
+	// }
+	// const deletedUser = await User.deleteOne({ _id: id });
+	// if (!deletedUser) throw new Error("Can't found user", { cause: 404 });
+	// return res.status(200).json({ message: "success" });
 };
 
 export const uploadPhoto = async (req, res) => {
@@ -43,4 +51,13 @@ export const uploadPhotoCloud = async (req, res) => {
 	return res
 		.status(200)
 		.json({ message: "your image uploaded successfully", user });
+};
+
+export const userProfile = async (req, res) => {
+	const user = await User.findOne(
+		{ _id: req.user._id },
+		{},
+		{ populate: [{ path: "messages" }] }
+	);
+	return res.status(200).json({ message: "success", user });
 };

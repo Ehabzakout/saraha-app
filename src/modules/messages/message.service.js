@@ -27,3 +27,23 @@ export const sendMessage = async (req, res) => {
 	});
 	return res.json({ message: "Your message send successfully" });
 };
+
+export const specificMessage = async (req, res) => {
+	const { id } = req.params;
+	console.log(id, req.user._id);
+	const message = await Message.findOne(
+		{ _id: id, receiver: req.user._id },
+		{},
+		{
+			populate: [
+				{
+					path: "receiver",
+					select: "_id email firstName lastName bod profileImg cloudImg",
+				},
+			],
+		}
+	);
+	if (!message) throw new Error("message not found", { cause: 404 });
+
+	return res.status(200).json({ message: "success", message });
+};

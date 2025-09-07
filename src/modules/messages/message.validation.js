@@ -6,3 +6,7 @@ export const messageSchema = Joi.object({
 	content: Joi.string().min(3).max(100),
 	sender: generalFields.objectId,
 }).required();
+
+export const specificMessageSchema = Joi.object({
+	id: generalFields.objectId.required(),
+}).required();

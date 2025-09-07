@@ -5,5 +5,6 @@ export function generateToken({ data, secret = secretKey, expiresIn = "15m" }) {
 	return jwt.sign(data, secret, { expiresIn });
 }
 export function verifyToken(token, secret = secretKey) {
-	return jwt.verify(token, secret);
+	const payload = jwt.verify(token, secret);
+	return payload;
 }

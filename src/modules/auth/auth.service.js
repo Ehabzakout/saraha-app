@@ -3,10 +3,9 @@ import bcrypt from "bcrypt";
 import { sendEmail } from "../../utils/email/index.js";
 import { generateOTP } from "../../utils/otp/index.js";
 import { OAuth2Client } from "google-auth-library";
-
 import { generateToken } from "../../utils/token/index.js";
 import { comparePassword, hashPassword } from "../../utils/hash/index.js";
-import { Token } from "./../../DB/models/token.model.js";
+import { Token } from "../../DB/models/token.model.js";
 
 // Register
 export const register = async (req, res) => {
@@ -112,12 +111,21 @@ export const login = async (req, res) => {
 		throw new Error("Verify you account", { cause: 401 });
 	const match = comparePassword(password, existedUser.password);
 	if (!match) throw new Error("Incorrect email or password", { cause: 401 });
+
+	// if user deleted before now
+	if (existedUser.deletedAt) {
+		existedUser.deletedAt = undefined;
+		await existedUser.save();
+	}
+
+	// generate tokens
 	const accessToken = generateToken({
 		data: {
 			name: existedUser.fullName,
 			id: existedUser._id,
 		},
 	});
+
 	const refreshToken = generateToken({
 		data: { name: existedUser.fullName, id: existedUser._id },
 		expiresIn: "7d",
@@ -150,6 +158,12 @@ export const loginWithGoogle = async (req, res) => {
 			fullName: payload.name,
 			userAgent: "google",
 		});
+		await existedUser.save();
+	}
+
+	// if user deleted before now
+	if (existedUser.deletedAt) {
+		existedUser.deletedAt = undefined;
 		await existedUser.save();
 	}
 	const accessToken = generateToken({

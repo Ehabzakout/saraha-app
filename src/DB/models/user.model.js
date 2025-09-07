@@ -59,6 +59,7 @@ const schema = new Schema(
 			type: Date,
 			default: Date.now(),
 		},
+		deletedAt: Date,
 	},
 	{
 		timestamps: true,
@@ -79,5 +80,11 @@ schema.virtual("age").get(function () {
 	const date = new Date(this.bod).getFullYear();
 	const now = new Date().getFullYear();
 	return Math.floor(now - date);
+});
+
+schema.virtual("messages", {
+	ref: "Message",
+	localField: "_id",
+	foreignField: "receiver",
 });
 export const User = model("User", schema);

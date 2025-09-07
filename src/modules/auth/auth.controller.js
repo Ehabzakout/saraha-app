@@ -8,6 +8,7 @@ import {
 	register,
 	resetPassword,
 	sendOtp,
+	updatePassword,
 	verifyAccount,
 } from "./auth.service.js";
 import { isValid } from "../../middleware/validation.middleware.js";
@@ -15,6 +16,7 @@ import {
 	loginSchema,
 	registerSchema,
 	resetPasswordSchema,
+	updatePasswordSchema,
 	verifyAccountSchema,
 } from "./auth.validation.js";
 
@@ -34,5 +36,12 @@ router.patch(
 	asyncHandler(resetPassword)
 );
 
+router.patch(
+	"/update-password",
+	isAuthenticated,
+	isValid(updatePasswordSchema),
+	asyncHandler(updatePassword)
+);
 router.post("/logout", isAuthenticated, asyncHandler(logout));
+
 export default router;

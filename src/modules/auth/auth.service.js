@@ -209,3 +209,20 @@ export const logout = async (req, res) => {
 	await Token.create({ token: accessToken, user: req.user._id });
 	return res.status(200).json({ message: "logged out successfully" });
 };
+
+// update password
+export const updatePassword = async (req, res) => {
+	const { newPassword, password } = req.body;
+	const user = await User.findOneAndUpdate({ _id: req.user._id });
+	if (!user) throw new Error("user not found", { cause: 404 });
+
+	const match = comparePassword(password, user.password);
+	if (!match) throw new Error("incorrect password");
+	user.password = hashPassword(newPassword);
+	user.credentialUpdatedAt = Date.now();
+	await user.save();
+
+	return res
+		.status(200)
+		.json({ message: "Your password updated successfully" });
+};

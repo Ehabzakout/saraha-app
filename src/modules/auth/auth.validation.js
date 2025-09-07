@@ -34,3 +34,9 @@ export const resetPasswordSchema = Joi.object({
 	newPassword: generalFields.password.required(),
 	rePassword: generalFields.rePassword("newPassword").required(),
 }).required();
+
+export const updatePasswordSchema = Joi.object({
+	password: generalFields.password.required(),
+	newPassword: generalFields.password.required(),
+	rePassword: generalFields.rePassword("newPassword").required(),
+});

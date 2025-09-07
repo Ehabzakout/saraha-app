@@ -12,8 +12,8 @@ import { Message } from "./DB/models/message.model.js";
 import { Token } from "./DB/models/token.model.js";
 export default function bootstrap(app, express) {
 	const limiter = rateLimit({
-		windowMs: 60 * 1000,
-		limit: 3,
+		windowMs: 5 * 60 * 1000,
+		limit: 5,
 		handler: (req, res, nex, options) => {
 			throw new Error(options.message, { cause: options.statusCode });
 		},
